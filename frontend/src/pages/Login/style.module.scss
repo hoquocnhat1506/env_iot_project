@@ -19,7 +19,7 @@
 }
 
 .title__name {
-    color: #FFF;
+    color: #ffff;
     font-family: "Noto Sans";
     font-size: 96px;
     font-style: normal;
@@ -116,6 +116,11 @@ div[class*='ant-form-item-control-input-content'] input {
     font-style: normal;
     font-weight: 600;
     line-height: normal;
+    margin-bottom: 20px;
+
+    &:focus {
+        outline: unset
+    }
 
     span {
         padding: 14px 10px;
@@ -130,8 +135,17 @@ div[class*='ant-form-item-control-input-content'] input {
     display: flex;
     flex-direction: column;
     gap: 25px;
+    margin-bottom: 25px;
 
     input {
         padding: 14px 16px;
     }
+}
+
+.login-account {
+    color: #FFF;
+    cursor: pointer;
+    display: flex;
+    gap: 7px;
+    justify-content: center;
 }

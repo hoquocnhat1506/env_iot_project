@@ -1,22 +1,33 @@
 import { FC, ReactElement } from "react";
+import { Link } from "react-router-dom";
+import { useState } from "react";
 
 const MainPage: FC = (): ReactElement => {
+  const [user, setUSer] = useState(null);
   return (
-    <nav className="navbar">
-      <div className="navbar-container">
-        <div className="navbar-logo">
-          <img src="/logo.png" alt="Logo" />
-          <span>IoT Monitoring System</span>
-        </div>
-
-        <ul className="navbar-menu">
-          <li className="navbar-item">Home</li>
-          <li className="navbar-item">Devices</li>
-          <li className="navbar-item">Reports</li>
-          <li className="navbar-item">Alerts</li>
-          <li className="navbar-item">Settings</li>
-        </ul>
-      </div>
+    <nav className="navbar-container">
+      <Link to="/" className="navbar-home">
+        Home
+      </Link>
+      {user ? (
+        <>
+          <p className="navbar-user">
+            Hi, <span> {user} </span>
+          </p>
+          <Link to="/logout" className="navbar-logout">
+            Log out
+          </Link>
+        </>
+      ) : (
+        <>
+          <Link to="/login" className="navbar-login">
+            Login
+          </Link>
+          <Link to="/register" className="navbar-register">
+            Register
+          </Link>
+        </>
+      )}
     </nav>
   );
 };
