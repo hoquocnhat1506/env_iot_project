@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { useState } from "react";
 
 const MainPage: FC = (): ReactElement => {
-  const [user, setUSer] = useState(null);
+  const [user] = useState(null);
   return (
     <nav className="navbar-container">
       <Link to="/" className="navbar-home">

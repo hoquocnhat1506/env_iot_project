@@ -1,35 +1,18 @@
 import React, { useState } from "react";
 import { Form, Input, Button } from "antd";
 import styles from "./style.module.scss";
+
 import Register from "../Register";
 
-const Login: React.FC = () => {
+const Login = () => {
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
   const [isRegister, setIsRegister] = useState(false);
-  const [loginData] = useState({
-    username: "",
-    password: "",
-  });
 
   const handleToggleRegister = () => {
     setIsRegister(!isRegister);
   };
 
-  const handleLoginSubmit = async () => {
-    try {
-      const response = await fetch("http://localhost:8000/v1/auth/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(loginData),
-      });
-
-      const data = await response.json();
-      console.log("Login Response:", data);
-    } catch (error) {
-      console.error("Error during login:", error);
-    }
-  };
   return (
     <div className={styles["root"]}>
       <div className={styles["root__main"]}>
@@ -55,16 +38,39 @@ const Login: React.FC = () => {
               <div className={styles["login__name"]}>
                 Login <span>Glad you’re back.!</span>
               </div>
-              <div className={styles["form__input"]}>
-                <Input placeholder="Username" />
-                <Input placeholder="Password" />
-              </div>
+              <Form name="login" className={styles["login-form"]}>
+                <Form.Item
+                  name="username"
+                  rules={[
+                    { required: true, message: "Please input your username!" },
+                  ]}
+                >
+                  <Input
+                    placeholder="Username"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                  />
+                </Form.Item>
+
+                <Form.Item
+                  name="password"
+                  rules={[
+                    { required: true, message: "Please input your password!" },
+                  ]}
+                >
+                  <Input.Password
+                    className={styles["pass__fill"]}
+                    placeholder="Password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                  />
+                </Form.Item>
+              </Form>
 
               <Button
                 className={styles["btn__click"]}
                 type="primary"
                 htmlType="submit"
-                onClick={handleLoginSubmit}
               >
                 Login
               </Button>
