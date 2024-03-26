@@ -2,21 +2,23 @@ const User = require("../models/User");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
+let refreshToken = []; // Khai báo biến refreshToken
+
 const authController = {
-  //RESISTER
+  // REGISTER
   registerUser: async (req, res) => {
     try {
-      // const salt = await bcrypt.genSalt(10);
-      // const hashed = await bcrypt.hash(req.body.password, salt);
+      const salt = await bcrypt.genSalt(10);
+      const hashedPassword = await bcrypt.hash(req.body.password, salt);
 
-      //Create new user
-      const newUser = await new User({
+      // Create new user
+      const newUser = new User({
         username: req.body.username,
         email: req.body.email,
-        password: req.body.password,
+        password: hashedPassword,
       });
 
-      //Save to DB
+      // Save to DB
       const user = await newUser.save();
       res.status(200).json(user);
     } catch (err) {
@@ -24,7 +26,7 @@ const authController = {
     }
   },
 
-  //GENERATE ACCESS TOKEN
+  // GENERATE ACCESS TOKEN
   generateAccessToken: (user) => {
     return jwt.sign(
       {
@@ -32,11 +34,11 @@ const authController = {
         admin: user.admin,
       },
       process.env.JWT_ACCESS_KEY,
-      { expiresIn: "2day" } // Thời gian token hết hạn
+      { expiresIn: "2day" }
     );
   },
 
-  //GENERATE REFRESH TOKEN
+  // GENERATE REFRESH TOKEN
   generateRefreshToken: (user) => {
     return jwt.sign(
       {
@@ -48,39 +50,45 @@ const authController = {
     );
   },
 
-  //LOGIN
+  // LOGIN
   loginUser: async (req, res) => {
     try {
       const user = await User.findOne({ username: req.body.username });
       if (!user) {
-        res.status(404).json("Wrong username!");
+        return res
+          .status(401)
+          .json({ message: "Invalid username or password!" });
       }
-      // const validPassword = await bcrypt.compare(
-      //   req.body.password,
-      //   user.password
-      // );
-      // console.log();
-      // if (!req.body.password) {
-      //   res.status(404).json("Wrong password!");
-      // }
-      if (user && req.body.password) {
-        const accessToken = authController.generateAccessToken(user);
-        // const refreshToken = authController.generateRefreshToken(user);
-        // refreshToken.push(refreshToken);
-        // res.cookie("refreshToken", refreshToken, {
-        //   httpOnly: true,
-        //   secure: false,
-        //   path: "/",
-        //   sameSite: "strict",
-        // });
-        const { password, ...other } = user._doc;
-        res.status(200).json({ ...other, accessToken });
+
+      const validPassword = await bcrypt.compare(
+        req.body.password,
+        user.password
+      );
+
+      if (!validPassword) {
+        return res
+          .status(401)
+          .json({ message: "Invalid username or password!" });
       }
+
+      // Generate tokens only if username and password are correct
+      const accessToken = authController.generateAccessToken(user);
+      const refreshToken = authController.generateRefreshToken(user);
+      res.cookie("refreshToken", refreshToken, {
+        httpOnly: true,
+        secure: false,
+        path: "/",
+        sameSite: "strict",
+      });
+      const { password, ...other } = user._doc;
+      res.status(200).json({ ...other, accessToken });
     } catch (err) {
-      res.status(500).json;
+      console.error("Error:", err);
+      res.status(500).json({ message: "Internal server error!" });
     }
   },
 
+  // REQUEST REFRESH TOKEN
   requestRefreshToken: async (req, res) => {
     // Lấy refresh token từ user
     const refreshToken = req.cookies.refreshToken;
@@ -92,7 +100,7 @@ const authController = {
       if (err) {
         console.log(err);
       }
-      refreshToken = refreshToken.fillter((token) => token !== refreshToken);
+      refreshToken = refreshToken.filter((token) => token !== refreshToken);
       //Create new accesstoken, refresh tolen
       const newAccessToken = authController.generateAccessToken(user);
       const newRefreshToken = authController.generateRefreshToken(user);
@@ -106,12 +114,14 @@ const authController = {
       res.status(200).json({ accessToken: newAccessToken });
     });
   },
+
+  // USER LOGOUT
   userLogout: async (req, res) => {
     res.clearCookie("refreshToken");
-    refreshToken = refreshToken.fillter(
+    refreshToken = refreshToken.filter(
       (token) => token !== req.cookies.refreshToken
     );
-    res.status(200).json("Lougout success");
+    res.status(200).json("Logout success");
   },
 };
 
